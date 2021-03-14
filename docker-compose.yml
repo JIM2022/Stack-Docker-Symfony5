@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+    mysql:
+        image: mysql:5.7
+        environment:
+            MYSQL_ROOT_PASSWORD: root
+        networks:
+            - symfony
+    php:
+        build:
+            context: .
+            dockerfile: docker/php/Dockerfile
+            args:
+                TIMEZONE: ${TIMEZONE}
+        volumes:
+            - ./symfony/:/var/www/symfony/
+        networks:
+            - symfony
+    nginx:
+        build:
+            context: .
+            dockerfile: docker/nginx/Dockerfile
+        volumes:
+            - ./symfony/:/var/www/symfony/
+        ports:
+            - 8999:80
+        networks:
+            - symfony
+
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: docker_phpmyadmin
+        ports:
+            - 8313:80
+        environment:
+            PMA_HOST: mysql
+        depends_on:
+            - mysql
+        links:
+            - mysql
+        networks:
+            - symfony
+
+volumes:
+    db_app:
+
+networks:
+    symfony:
